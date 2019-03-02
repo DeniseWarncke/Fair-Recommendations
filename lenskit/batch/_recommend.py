@@ -78,7 +78,7 @@ def recommend(algo, users, n, candidates=None, *, nprocs=None, **kwargs):
         A frame with at least the columns ``user``, ``rank``, and ``item``; possibly also
         ``score``, and any other columns returned by the recommender.
     """
-
+    print("test _reccomend")
     rec_algo = Recommender.adapt(algo)
     if candidates is None and rec_algo is not algo:
         warnings.warn('no candidates provided and algo is not a recommender, unlikely to work')
