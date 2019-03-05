@@ -12,7 +12,7 @@ import pandas as pd
 class LegMedLensKit():
 
     def loadData():  
-        ratings = pd.read_csv('/Users/josse/Desktop/ratings.dat', sep='::',
+        ratings = pd.read_csv('/Users/denisehansen/Desktop/movielens-dataset/ratings.dat', sep='::',
                       names=['user', 'item', 'rating', 'timestamp'])
         print (ratings.head())
         return(ratings)
