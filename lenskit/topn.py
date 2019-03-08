@@ -72,15 +72,19 @@ class RecListAnalysis:
             pandas.DataFrame: The results of the analysis.
         """
         _log.info('analyzing %d recommendations (%d truth rows)', len(recs), len(truth))
+        #gcols normalt user + algorithm - det vi gerne vil groupe vores output på. 
         gcols = self.group_cols
         if gcols is None:
             gcols = [c for c in recs.columns if c not in self.DEFAULT_SKIP_COLS]
         _log.info('using group columns %s', gcols)
         gc_map = dict((c, i) for (i, c) in enumerate(gcols))
-
+        #ti_collumns = bliver brugt til truth datsat = user/item = burde egentlig være unikke?? med mindre en user har enmeldt den samme film mere end en gang. 
         ti_cols = [c for c in gcols if c in truth.columns]
         ti_cols.append('item')
-
+        print("gcols")
+        print(gcols)
+        print("ti_cols")
+        print(ti_cols)
         _log.info('using truth ID columns %s', ti_cols)
         truth = truth.set_index(ti_cols)
         if not truth.index.is_unique:
@@ -95,14 +99,19 @@ class RecListAnalysis:
             "result set size {} != group count {}".format(len(res), len(grouped.groups))
         assert res.index.nlevels == len(gcols)
 
+        # for hver gcols grouping. altså for hver user/algo par - lav et resultat
         for i, row_key in enumerate(res.index):
+            # g_recs er en ny datafrme som kun indekdleser resultaterne pr grouping = user/algorithm  
             g_rows = grouped.indices[row_key]
             g_recs = recs.iloc[g_rows, :]
+            # er ratings med på listen?  
             if len(ti_cols) == len(gcols) + 1:
-                tr_key = row_key
+                tr_key = row_key # row_key = et index i "res". 
+                print ("len(ti_cols) == len(gcols) + 1: -> tr_key = " , tr_key,)
+
             else:
                 tr_key = tuple([row_key[gc_map[c]] for c in ti_cols[:-1]])
-
+                print (tr_key)
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
                 res.iloc[i, j] = mf(g_recs, g_truth, **margs)
