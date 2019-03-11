@@ -7,7 +7,7 @@ import pandas as pd
 
 from .metrics.topnFair import *
 
-class RecListAnalysis: 
+class FairRecListAnalysis: 
     """
     Compute one or more ranking (top-N) metrics over recommendation lists.
 
@@ -29,7 +29,7 @@ class RecListAnalysis:
         group_cols(list):
             The columns to group by, or ``None`` to use the default.
     """
-DEFAULT_SKIP_COLS = ['item', 'rank', 'score', 'rating']
+    DEFAULT_SKIP_COLS = ['item', 'rank', 'score', 'rating']
 
     def __init__(self, group_cols=None):
         self.group_cols = group_cols
