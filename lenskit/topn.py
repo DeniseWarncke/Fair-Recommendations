@@ -107,8 +107,8 @@ class RecListAnalysis:
             # er ratings med på listen?  
             if len(ti_cols) == len(gcols) + 1:
                 tr_key = row_key # row_key = et index i "res". 
-                print ("len(ti_cols) == len(gcols) + 1: -> tr_key = " , tr_key,)
-
+                print ("len(ti_cols) == len(gcols) + 1: -> tr_key = " )
+                  
             else:
                 tr_key = tuple([row_key[gc_map[c]] for c in ti_cols[:-1]])
                 print (tr_key)
