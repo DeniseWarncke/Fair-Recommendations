@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from .metrics.topnFair import *
+_log = logging.getLogger(__name__) 
 
 class FairRecListAnalysis: 
     """
@@ -37,7 +38,7 @@ class FairRecListAnalysis:
 
 
 
-def add_metric(self, metric, *, name=None, **kwargs):
+    def add_metric(self, metric, *, name=None, **kwargs):
         """
         Add a metric to the analysis.
 
@@ -58,7 +59,7 @@ def add_metric(self, metric, *, name=None, **kwargs):
 
 
 
-def compute(self, recs, truth):
+    def compute(self, recs, truth):
         """
         Run the analysis.  Neither data frame should be meaningfully indexed.
 
@@ -105,7 +106,7 @@ def compute(self, recs, truth):
 
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
-                res.iloc[i, j] = mf(g_recs, g_truth, **margs)
+                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf)
 
         return res
 
