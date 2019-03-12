@@ -12,7 +12,7 @@ from __future__ import division
 import random 
 import numpy as np
 import math
-import dataGenerator
+#import dataGenerator
 
 
 from scipy.stats import spearmanr
@@ -382,8 +382,6 @@ def completePermutaionCheck(_perm1,_perm2):
         raise ValueError("Second permutation include repetitive items")    
     if len(_perm1) != len(_perm2):
         raise ValueError("Input permutations should have same size")
-
-
 
 
 

@@ -53,7 +53,7 @@ class FairRecListAnalysis:
             **kwargs: Additional arguments to pass to the metric.
         """
         if name is None:
-            name = metric.__name__
+            name = metric
 
         self.metrics.append((metric, name, kwargs))
 
