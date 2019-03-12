@@ -25,6 +25,7 @@ NORM_ITERATION=10 # max iterations used in normalizer computation
 #NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 
+##
 def calculateNDFairnes(recs, truth):
 
     """
@@ -42,7 +43,6 @@ def calculateNDFairnes(recs, truth):
         :return: returns the value of selected group fairness measure of this input ranking
     """
 
-    
     # error handling for input type
     if not isinstance( _cut_point, ( int, long ) ):
         raise TypeError("Input batch size must be an integer larger than 0")
@@ -51,7 +51,14 @@ def calculateNDFairnes(recs, truth):
     if not isinstance( _gf_measure, str ):
         raise TypeError("Input group fairness measure must be a string that choose from ['rKL', 'rND', 'rRD']")
 
-"""
+    _ranking = recs.['item'].values
+    #pro_index=[idx for idx,row in _data.iterrows() if row[_sensi_att] == _sensi_bound]
+    _protected_group = recs.loc[recs['Action'] == 1]
+    _user_N = len(recs)
+    _pro_N = len(_protected_group)
+    
+
+
 
 
 
