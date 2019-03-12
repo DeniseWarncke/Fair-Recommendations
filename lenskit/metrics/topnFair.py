@@ -12,9 +12,12 @@ from __future__ import division
 import random 
 import numpy as np
 import math
-from .dataGenerator import *
+import dataGenerator
+
+
 from scipy.stats import spearmanr
 from scipy.stats import pearsonr
+
 
 
 ND_DIFFERENCE="rND" #represent normalized difference group fairness measure
@@ -30,6 +33,20 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 ##
 def calculateNDFairnes(recs, truth, metric):
 
+    _ranking = recs['item'].values
+    #pro_index=[idx for idx,row in _data.iterrows() if row[_sensi_att] == _sensi_bound]
+    _protected_group_temp = recs.loc[recs['Action'] == 1]
+    _protected_group = _protected_group_temp['item'].values
+    _cut_point = 10
+    _gf_measure = metric
+    #_normalizer = getNormalizer(user_N, pro_N, _gf_measure)
+    _normalizer = 1
+
+    return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
+    
+
+
+def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer):
     """
         Calculate group fairness value of the whole ranking.
         Calls function 'calculateFairness' in the calculation.
@@ -44,17 +61,9 @@ def calculateNDFairnes(recs, truth, metric):
         :param _normalizer: The normalizer of the input _gf_measure that is computed externally for efficiency.
         :return: returns  fairness value of _ranking, a float, normalized to [0, 1]
     """
-
-    _ranking = recs['item'].values
-    #pro_index=[idx for idx,row in _data.iterrows() if row[_sensi_att] == _sensi_bound]
-    _protected_group_temp = recs.loc[recs['Action'] == 1]
-    _protected_group = _protected_group_temp['item'].values
-    _cut_point = 10
-    _gf_measure = metric
     user_N=len(_ranking)
     pro_N=len(_protected_group)
-    #_normalizer = getNormalizer(user_N, pro_N, _gf_measure)
-    _normalizer = 1
+
 
     if _normalizer==0:
         raise ValueError("Normalizer equals to zero")
@@ -85,7 +94,6 @@ def calculateNDFairnes(recs, truth, metric):
 
     
     return discounted_gf/_normalizer
-
 
 
 def calculateFairness(_ranking,_protected_group,_user_N,_pro_N,_gf_measure):
@@ -194,9 +202,9 @@ def getNormalizer(_user_N,_pro_N,_gf_measure):
     normalizer_dic=readNormalizerDictionary()
 
     # error handling for type  
-    if not isinstance( _user_N, ( int, long ) ):
+    if not isinstance( _user_N, ( int ) ):
         raise TypeError("Input user number must be an integer")
-    if not isinstance( _pro_N, ( int, long ) ):
+    if not isinstance( _pro_N, ( int ) ):
         raise TypeError("Input size of protected group must be an integer")
     if not isinstance( _gf_measure, str ):
         raise TypeError("Input group fairness measure must be a string that choose from ['rKL', 'rND', 'rRD']")
@@ -267,7 +275,8 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
             # generate unfair ranking using algorithm
             unfair_ranking=dataGenerator.generateUnfairRanking(input_ranking,protected_group,fpi)    
             # calculate the non-normalized group fairness value i.e. input normalized value as 1
-            gf=calculateNDFairness(unfair_ranking,protected_group,NORM_CUTPOINT,_gf_measure,1)
+            gf=calculateNDFairnessPara(unfair_ranking,protected_group,NORM_CUTPOINT,_gf_measure,1)
+            
             iter_results.append(gf)
         avg_maximums.append(np.mean(iter_results))        
     return max(avg_maximums)
@@ -285,9 +294,9 @@ def calculateScoreDifference(_scores1,_scores2):
         :return: returns the average score difference of two input score lists.
     """
     # error handling 
-    if not isinstance(_scores1, (list, tuple, np.ndarray)) and not isinstance( _scores1, basestring ):
+    if not isinstance(_scores1, (list, tuple, np.ndarray)) and not isinstance( _scores1, str ):
         raise TypeError("First score list must be a list-wise structure defined by '[]' symbol")
-    if not isinstance(_scores2, (list, tuple, np.ndarray)) and not isinstance( _scores2, basestring ):
+    if not isinstance(_scores2, (list, tuple, np.ndarray)) and not isinstance( _scores2, str ):
         raise TypeError("Second score list must be a list-wise structure defined by '[]' symbol")
     
     if len(_scores1)*len(_scores2) ==0:
@@ -358,9 +367,9 @@ def completePermutaionCheck(_perm1,_perm2):
         :return: no returns. Raise error if founded.
     """
     
-    if not isinstance(_perm1, (list, tuple, np.ndarray)) and not isinstance( _perm1, basestring ):
+    if not isinstance(_perm1, (list, tuple, np.ndarray)) and not isinstance( _perm1, str ):
         raise TypeError("First permutation must be a list-wise structure defined by '[]' symbol")
-    if not isinstance(_perm2, (list, tuple, np.ndarray)) and not isinstance( _perm2, basestring ):
+    if not isinstance(_perm2, (list, tuple, np.ndarray)) and not isinstance( _perm2, str ):
         raise TypeError("Second permutation must be a list-wise structure defined by '[]' symbol")
     
     # error handling for complete permutation
@@ -373,21 +382,6 @@ def completePermutaionCheck(_perm1,_perm2):
         raise ValueError("Second permutation include repetitive items")    
     if len(_perm1) != len(_perm2):
         raise ValueError("Input permutations should have same size")
-
-
-
-
-   
-    
-
-
-
-
-
-
-
-
-
 
 
 
