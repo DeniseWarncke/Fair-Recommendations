@@ -39,8 +39,10 @@ def calculateNDFairnes(recs, truth, metric):
     _protected_group = _protected_group_temp['item'].values
     _cut_point = 10
     _gf_measure = metric
-    #_normalizer = getNormalizer(user_N, pro_N, _gf_measure)
-    _normalizer = 1
+    user_N=len(_ranking)
+    pro_N=len(_protected_group)
+    _normalizer = getNormalizer(user_N, pro_N, _gf_measure)
+    #_normalizer = 1
 
     return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
     
@@ -234,14 +236,16 @@ def readNormalizerDictionary():
         :return: returns normalizer dictionary computed externally.
     """
     try:
-        with open(NORM_FILE) as f:
+        with open(NORM_FILE,"r+") as f:
             lines = f.readlines()
+            print (lines)
     except EnvironmentError as e:
         print("Cannot find the normalizer txt file")
     
     
     normalizer_dic={}
     for line in lines:
+        print ("test: line in lines")
         normalizer=line.split(":")
         normalizer_dic[normalizer[0]]=normalizer[1]
     return normalizer_dic
