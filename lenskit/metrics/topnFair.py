@@ -236,7 +236,7 @@ def readNormalizerDictionary():
         :return: returns normalizer dictionary computed externally.
     """
     try:
-        with open(NORM_FILE,"r+") as f:
+        with open("normalizer.txt", "w+") as f:
             lines = f.readlines()
             print (lines)
     except EnvironmentError as e:
@@ -265,6 +265,8 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
         
         :return: returns the group fairness value for the unfair ranking generated at input setting
     """
+    from lenskit.metrics.dataGenerator import generateUnfairRanking
+    #import lenskit.metrics.dataGenerator * as dataGenerator  
     # set the range of fairness probability based on input group fairness measure
     if _gf_measure==RD_DIFFERENCE: # if the group fairness measure is rRD, then use 0.5 as normalization range
         f_probs=[0,0.5] 
@@ -277,7 +279,7 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
             input_ranking=[x for x in range(_user_N)]
             protected_group=[x for x in range(_pro_N)]
             # generate unfair ranking using algorithm
-            unfair_ranking=dataGenerator.generateUnfairRanking(input_ranking,protected_group,fpi)    
+            unfair_ranking=generateUnfairRanking(input_ranking,protected_group,fpi)    
             # calculate the non-normalized group fairness value i.e. input normalized value as 1
             gf=calculateNDFairnessPara(unfair_ranking,protected_group,NORM_CUTPOINT,_gf_measure,1)
             
