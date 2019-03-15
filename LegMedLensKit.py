@@ -12,7 +12,7 @@ import pandas as pd
 class LegMedLensKit():
 
     def loadData():  
-        ratings = pd.read_csv('/Users/denisehansen/Desktop/movielens-dataset/ratings.dat', sep='::',
+        ratings = pd.read_csv('/Users/josse/Desktop/ratings.dat', sep='::',
                       names=['user', 'item', 'rating', 'timestamp'])
         print (ratings.head())
         return(ratings)
@@ -38,6 +38,8 @@ class LegMedLensKit():
         recs = batch.recommend(fittable, users, 100)
         # add the algorithm name for analyzability
         recs['Algorithm'] = aname
+        print("recs")
+        print (recs.head())
         return recs
     
     all_recs = []
@@ -50,6 +52,7 @@ class LegMedLensKit():
         all_recs.append(eval('ALS', algo_als, train, test))
 
     print("test2")
+     print(all_recs.head())
     all_recs = pd.concat(all_recs, ignore_index=True)
     print(all_recs.head())
     test_data = pd.concat(test_data, ignore_index=True) 
