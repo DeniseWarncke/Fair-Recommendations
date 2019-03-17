@@ -81,6 +81,7 @@ class FairRecListAnalysis:
 
         ti_cols = [c for c in gcols if c in truth.columns]
         ti_cols.append('item')
+        print("ti_cols: ", ti_cols)
 
         _log.info('using truth ID columns %s', ti_cols)
         truth = truth.set_index(ti_cols)
@@ -95,17 +96,24 @@ class FairRecListAnalysis:
         assert len(res) == len(grouped.groups), \
             "result set size {} != group count {}".format(len(res), len(grouped.groups))
         assert res.index.nlevels == len(gcols)
-
+        print("res.index: ", res.index)
+        print (res.head()) 
         for i, row_key in enumerate(res.index):
             g_rows = grouped.indices[row_key]
             g_recs = recs.iloc[g_rows, :]
             if len(ti_cols) == len(gcols) + 1:
                 tr_key = row_key
+                print("tr_key = row_key: ", tr_key) 
             else:
                 tr_key = tuple([row_key[gc_map[c]] for c in ti_cols[:-1]])
+                print("tr_key :" , tr_key  )
 
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
+                print("tr_key: " , tr_key)
+                print("grecs")
+                g_recs.head
+                print(len(g_recs))
                 res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf)
 
         return res

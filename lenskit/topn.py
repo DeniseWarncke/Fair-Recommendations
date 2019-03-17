@@ -98,7 +98,8 @@ class RecListAnalysis:
         assert len(res) == len(grouped.groups), \
             "result set size {} != group count {}".format(len(res), len(grouped.groups))
         assert res.index.nlevels == len(gcols)
-
+        print (res.head())  
+        print("res.index: ", res.index)
         # for hver gcols grouping. altså for hver user/algo par - lav et resultat
         for i, row_key in enumerate(res.index):
             # g_recs er en ny datafrme som kun indekdleser resultaterne pr grouping = user/algorithm  
@@ -111,7 +112,7 @@ class RecListAnalysis:
                   
             else:
                 tr_key = tuple([row_key[gc_map[c]] for c in ti_cols[:-1]])
-                print (tr_key)
+                print ("true_key: ", tr_key)
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
                 res.iloc[i, j] = mf(g_recs, g_truth, **margs)

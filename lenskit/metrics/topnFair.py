@@ -32,8 +32,17 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 ##
 def calculateNDFairnes(recs, truth, metric):
-
-    _ranking = recs['item'].values
+    print("calculateNDFairnes")
+    print(recs.head())
+    _ranking = recs['item'].tolist()
+    #test = list(_ranking)
+    #print("test")
+    #print (test)
+    #print("repr")
+    #print(repr(_ranking))
+    print("_ranking bum" )
+    print(_ranking)
+    print(" ")
     #pro_index=[idx for idx,row in _data.iterrows() if row[_sensi_att] == _sensi_bound]
     _protected_group_temp = recs.loc[recs['Action'] == 1]
     _protected_group = _protected_group_temp['item'].values
@@ -43,7 +52,6 @@ def calculateNDFairnes(recs, truth, metric):
     pro_N=len(_protected_group)
     _normalizer = getNormalizer(user_N, pro_N, _gf_measure)
     #_normalizer = 1
-
     return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
     
 
@@ -63,8 +71,15 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
         :param _normalizer: The normalizer of the input _gf_measure that is computed externally for efficiency.
         :return: returns  fairness value of _ranking, a float, normalized to [0, 1]
     """
+    print("calculateNDFairnessPara")
     user_N=len(_ranking)
     pro_N=len(_protected_group)
+    print ("user_n = ",  user_N)
+    print ("pro_n = ",  pro_N)
+    print("ranking")
+    print (_ranking)
+    print ("protectedgroup")
+    print(_protected_group)
 
 
     if _normalizer==0:
@@ -238,7 +253,6 @@ def readNormalizerDictionary():
     try:
         with open("normalizer.txt") as f:
             lines = f.readlines()
-            print (lines)
     except EnvironmentError as e:
         print("Cannot find the normalizer txt file")
     
