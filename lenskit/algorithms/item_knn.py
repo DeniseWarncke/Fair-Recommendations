@@ -95,7 +95,6 @@ class ItemItem(Predictor):
     Item-item nearest-neighbor collaborative filtering with ratings. This item-item implementation
     is not terribly configurable; it hard-codes design decisions found to work well in the previous
     Java-based LensKit code.
-
     Attributes:
         item_index_(pandas.Index): the index of item IDs.
         item_means_(numpy.ndarray): the mean rating for each known item.
@@ -140,10 +139,8 @@ class ItemItem(Predictor):
     def fit(self, ratings):
         """
         Train a model.
-
         The model-training process depends on ``save_nbrs`` and ``min_sim``, but *not* on other
         algorithm parameters.
-
         Args:
             ratings(pandas.DataFrame):
                 (user,item,rating) data for computing item similarities.
