@@ -1,0 +1,16 @@
+name: fair-recommendation
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.6.5
+  - pandas
+  - numpy
+  - numba
+  - scipy
+  - watermark
+  - cffi
+  - matplotlib
+  - ipykernel
+  - jupyterlab
+  - nb_conda_kernels
