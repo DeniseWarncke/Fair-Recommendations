@@ -26,5 +26,5 @@ to refresh your local environment.
 
 This folder contains 3 notebooks that run experiments and showcase the use of the fairness metrics.
 
-## [Test2.ipynb](Test2.ipnb)
+## [Test2.ipynb](Test2.ipynb)
 This is an example notebook to get you started. And this is a very important sentence explaining why this notebook is very important.
