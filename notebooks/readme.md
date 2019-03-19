@@ -10,13 +10,18 @@ Then activate the environment:
 conda activate fair-recommendation
 ```
 
-Then start `jupyter`:
+If you have several python environments installed in your system, then run the following command to give a reasonable name to your current environment:
+```sh
+python3 -m ipykernel install --user --name fair-recommendation --display-name fair-recommendation
+```
+
+Then start `jupyter` and select `fair-recommentdation` as your kernel when opening a notebook:
 ```sh
 jupyter lab
 ```
 
 ### Update the environment
-To add a new library, update `fair-recommendation.yml` with the library and then run
+To add a new library, update [fair-recommendation.yml](fair-recommendation.yml) with the library and then run
 ```sh
 conda env update -f fair-recommendation.yml
 ```
