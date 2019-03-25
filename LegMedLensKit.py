@@ -52,7 +52,7 @@ class LegMedLensKit():
         all_recs.append(eval('ALS', algo_als, train, test))
 
     print("test2")
-     print(all_recs.head())
+    print(all_recs.head())
     all_recs = pd.concat(all_recs, ignore_index=True)
     print(all_recs.head())
     test_data = pd.concat(test_data, ignore_index=True) 

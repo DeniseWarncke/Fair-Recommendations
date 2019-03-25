@@ -59,7 +59,7 @@ class FairRecListAnalysis:
 
 
 
-    def compute(self, recs, truth):
+    def compute(self, recs, truth, providers = None ):
         """
         Run the analysis.  Neither data frame should be meaningfully indexed.
 
@@ -103,18 +103,18 @@ class FairRecListAnalysis:
             g_recs = recs.iloc[g_rows, :]
             if len(ti_cols) == len(gcols) + 1:
                 tr_key = row_key
-                print("tr_key = row_key: ", tr_key) 
+                #print("tr_key = row_key: ", tr_key) 
             else:
                 tr_key = tuple([row_key[gc_map[c]] for c in ti_cols[:-1]])
-                print("tr_key :" , tr_key  )
+                #print("tr_key :" , tr_key  )
 
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
-                print("tr_key: " , tr_key)
-                print("grecs")
-                g_recs.head
-                print(len(g_recs))
-                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf)
+                #print("tr_key: " , tr_key)
+                #print("grecs")
+                #g_recs.head
+                #print(len(g_recs))
+                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf , providers)
 
         return res
 

@@ -6,14 +6,11 @@ Lav measures ud fra : item, score, user, rank, algorithm, protected
 
 """
 
-
-
 from __future__ import division
 import random 
 import numpy as np
 import math
 #import dataGenerator
-
 
 from scipy.stats import spearmanr
 from scipy.stats import pearsonr
@@ -31,28 +28,38 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 
 ##
-def calculateNDFairnes(recs, truth, metric):
-    print("calculateNDFairnes")
-    print(recs.head())
+def calculateNDFairnes(recs, truth, metric, providers=None):
+    #print("calculateNDFairnes")
+    #print(recs.head())
+    #_ranking = []
     _ranking = recs['item'].tolist()
-    #test = list(_ranking)
-    #print("test")
-    #print (test)
-    #print("repr")
-    #print(repr(_ranking))
-    print("_ranking bum" )
-    print(_ranking)
-    print(" ")
+    #print("_ranking calculateNDFairness" )
+    #print(_ranking)
+    #print(" ")
     #pro_index=[idx for idx,row in _data.iterrows() if row[_sensi_att] == _sensi_bound]
     _protected_group_temp = recs.loc[recs['Action'] == 1]
     _protected_group = _protected_group_temp['item'].values
-    _cut_point = 10
+    _cut_point = 10 
     _gf_measure = metric
     user_N=len(_ranking)
     pro_N=len(_protected_group)
+    
+    if _gf_measure == "div":
+        print ("measure = div")
+        return calculate_div(recs, providers)
+    #print(_ranking)
     _normalizer = getNormalizer(user_N, pro_N, _gf_measure)
+    #print(_ranking)
     #_normalizer = 1
     return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
+    
+
+def calculate_div(recs, providers):
+    res1 = recs[providers]
+    res2 = res1.sum()
+    res3 = res2.loc[(res2>0)]
+    
+    return len(res3)/len(providers)
     
 
 
@@ -71,15 +78,20 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
         :param _normalizer: The normalizer of the input _gf_measure that is computed externally for efficiency.
         :return: returns  fairness value of _ranking, a float, normalized to [0, 1]
     """
-    print("calculateNDFairnessPara")
+    #print("calculateNDFairnessPara")
     user_N=len(_ranking)
     pro_N=len(_protected_group)
-    print ("user_n = ",  user_N)
-    print ("pro_n = ",  pro_N)
-    print("ranking")
-    print (_ranking)
-    print ("protectedgroup")
-    print(_protected_group)
+    
+    """    if 0 not in _ranking:
+        if 1 not in _ranking: 
+            print ("user_n = ",  user_N)
+            print ("pro_n = ",  pro_N)
+            print ("true")
+            print("ranking")
+            print (_ranking)
+            print ("protectedgroup")
+            print(_protected_group)
+     """
 
 
     if _normalizer==0:
@@ -300,6 +312,7 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
             
             iter_results.append(gf)
         avg_maximums.append(np.mean(iter_results))        
+    print ("normalizer value to return : ", max(avg_maximums))
     return max(avg_maximums)
 
 def calculateScoreDifference(_scores1,_scores2):
