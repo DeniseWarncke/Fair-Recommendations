@@ -47,6 +47,10 @@ def calculateNDFairnes(recs, truth, metric, providers=None):
     if _gf_measure == "div":
         print ("measure = div")
         return calculate_div(recs, providers)
+
+    if _gf_measure == "dem_parity":
+        return calculate_dem_Parity(recs, _protected_group)
+    
     #print(_ranking)
     _normalizer = getNormalizer(user_N, pro_N, _gf_measure)
     #print(_ranking)
@@ -60,6 +64,22 @@ def calculate_div(recs, providers):
     res3 = res2.loc[(res2>0)]
     
     return len(res3)/len(providers)
+
+def calculate_dem_Parity(recs, protected_group): 
+    #beslut hvad der er nemmest. Skal denne tage "protected group". contains eller tage en protected variabel?
+    
+    exposure_pro = 0 
+    exposure_unpro = 0
+
+    for index, row in recs.iterrows():
+        if row["item"] in protected_group:
+           exposure_pro = exposure_pro + (1/math.log2(1+row["rank"])) 
+        else:
+           exposure_unpro = exposure_unpro + (1/math.log2(1+row["rank"]))  
+   
+    #return abs(exposure_pro-exposure_unpro)
+    return exposure_pro/exposure_unpro
+
     
 
 
