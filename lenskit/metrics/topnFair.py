@@ -28,7 +28,7 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 
 ##
-def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None):
+def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, items_N=None, proItems_N=None):
     #print("calculateNDFairnes")
     #print(recs.head())
     #_ranking = []
@@ -41,21 +41,21 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None):
     _protected_group = _protected_group_temp['item'].values
     _cut_point = 10 
     _gf_measure = metric
-    user_N=len(_ranking)
-    pro_N=len(_protected_group)
     
     if _gf_measure == "div":
         #print ("measure = div")
         return calculate_div(recs, providers)
 
-    if _gf_measure == "dem_parity":
+    elif _gf_measure == "dem_parity":
         return calculate_dem_Parity(recs, _protected_group)
     
-    #print(_ranking)
-    _normalizer = getNormalizer(user_N, pro_N, _gf_measure)
-    #print(_ranking)
-    #_normalizer = 1
-    return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
+    elif _gf_measure == "rND" or _gf_measure == "rKL" or _gf_measure == "rRD":
+        _normalizer = getNormalizer(items_N, proItems_N, _gf_measure)
+        return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
+     
+    else:
+        print("no valid _gf_measure given")
+        return 0; 
     
 
 def calculate_div(recs, providers):
