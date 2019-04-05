@@ -59,7 +59,7 @@ class FairRecListAnalysis:
 
 
 
-    def compute(self, recs, truth, providers = None ):
+    def compute(self, recs, truth, protected_varible, providers = None ):
         """
         Run the analysis.  Neither data frame should be meaningfully indexed.
 
@@ -81,7 +81,7 @@ class FairRecListAnalysis:
 
         ti_cols = [c for c in gcols if c in truth.columns]
         ti_cols.append('item')
-        print("ti_cols: ", ti_cols)
+        #print("ti_cols: ", ti_cols)
 
         _log.info('using truth ID columns %s', ti_cols)
         truth = truth.set_index(ti_cols)
@@ -96,8 +96,8 @@ class FairRecListAnalysis:
         assert len(res) == len(grouped.groups), \
             "result set size {} != group count {}".format(len(res), len(grouped.groups))
         assert res.index.nlevels == len(gcols)
-        print("res.index: ", res.index)
-        print (res.head()) 
+        #print("res.index: ", res.index)
+        #print (res.head()) 
         for i, row_key in enumerate(res.index):
             g_rows = grouped.indices[row_key]
             g_recs = recs.iloc[g_rows, :]
@@ -114,7 +114,7 @@ class FairRecListAnalysis:
                 #print("grecs")
                 #g_recs.head
                 #print(len(g_recs))
-                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf , providers)
+                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf, protected_varible, providers)
 
         return res
 

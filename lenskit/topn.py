@@ -81,10 +81,10 @@ class RecListAnalysis:
         #ti_collumns = bliver brugt til truth datsat = user/item = burde egentlig være unikke?? med mindre en user har enmeldt den samme film mere end en gang. 
         ti_cols = [c for c in gcols if c in truth.columns]
         ti_cols.append('item')
-        print("gcols")
-        print(gcols)
-        print("ti_cols")
-        print(ti_cols)
+        #print("gcols")
+        #print(gcols)
+        #print("ti_cols")
+        #print(ti_cols)
         _log.info('using truth ID columns %s', ti_cols)
         truth = truth.set_index(ti_cols)
         if not truth.index.is_unique:
@@ -98,8 +98,8 @@ class RecListAnalysis:
         assert len(res) == len(grouped.groups), \
             "result set size {} != group count {}".format(len(res), len(grouped.groups))
         assert res.index.nlevels == len(gcols)
-        print (res.head())  
-        print("res.index: ", res.index)
+        #print (res.head())  
+        #print("res.index: ", res.index)
         # for hver gcols grouping. altså for hver user/algo par - lav et resultat
         for i, row_key in enumerate(res.index):
             # g_recs er en ny datafrme som kun indekdleser resultaterne pr grouping = user/algorithm  
@@ -108,11 +108,11 @@ class RecListAnalysis:
             # er ratings med på listen?  
             if len(ti_cols) == len(gcols) + 1:
                 tr_key = row_key # row_key = et index i "res". 
-                print ("len(ti_cols) == len(gcols) + 1: -> tr_key = " )
+                #print ("len(ti_cols) == len(gcols) + 1: -> tr_key = " )
                   
             else:
                 tr_key = tuple([row_key[gc_map[c]] for c in ti_cols[:-1]])
-                print ("true_key: ", tr_key)
+                #print ("true_key: ", tr_key)
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
                 res.iloc[i, j] = mf(g_recs, g_truth, **margs)

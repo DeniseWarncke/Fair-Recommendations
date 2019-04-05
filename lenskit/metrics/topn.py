@@ -93,10 +93,10 @@ def ndcg(recs, truth, discount=np.log2):
             The rank discount function.  Each item's score will be divided the discount of its rank,
             if the discount is greater than 1.
     """
-    print("Recs:")
-    print(recs)
-    print("Truth")
-    print(truth)
+    #print("Recs:")
+    #print(recs)
+    #print("Truth")
+    #print(truth)
     if 'rating' in truth.columns:
         ideal = _dcg(truth.rating.sort_values(ascending=False), discount)
         merged = recs[['item']].join(truth[['rating']], on='item', how='left')

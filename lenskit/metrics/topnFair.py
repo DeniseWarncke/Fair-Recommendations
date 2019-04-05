@@ -28,7 +28,7 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 
 ##
-def calculateNDFairnes(recs, truth, metric, providers=None):
+def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None):
     #print("calculateNDFairnes")
     #print(recs.head())
     #_ranking = []
@@ -37,7 +37,7 @@ def calculateNDFairnes(recs, truth, metric, providers=None):
     #print(_ranking)
     #print(" ")
     #pro_index=[idx for idx,row in _data.iterrows() if row[_sensi_att] == _sensi_bound]
-    _protected_group_temp = recs.loc[recs['Action'] == 1]
+    _protected_group_temp = recs.loc[recs[protected_varible] == 1]
     _protected_group = _protected_group_temp['item'].values
     _cut_point = 10 
     _gf_measure = metric
@@ -45,7 +45,7 @@ def calculateNDFairnes(recs, truth, metric, providers=None):
     pro_N=len(_protected_group)
     
     if _gf_measure == "div":
-        print ("measure = div")
+        #print ("measure = div")
         return calculate_div(recs, providers)
 
     if _gf_measure == "dem_parity":
@@ -247,6 +247,7 @@ def getNormalizer(_user_N,_pro_N,_gf_measure):
         
         :return: returns the maximum value of selected group fairness measure in _max_iter iterations
     """
+    #print("normalizer -pro-N: ", _pro_N)
     # read the normalizor dictionary that is computed externally for efficiency
     normalizer_dic=readNormalizerDictionary()
 
@@ -270,7 +271,15 @@ def getNormalizer(_user_N,_pro_N,_gf_measure):
     if current_normalizer_key in normalizer_dic.keys():
         normalizer=normalizer_dic[current_normalizer_key]
     else:
-        normalizer=calculateNormalizer(_user_N,_pro_N,_gf_measure)           
+        normalizer=calculateNormalizer(_user_N,_pro_N,_gf_measure) 
+        try:
+            with open("normalizer.txt" , "a+") as f:                
+                towrite = current_normalizer_key + ":" + str(round(normalizer,2)) + "\n"
+                f.write(towrite)
+        except EnvironmentError as e:
+            print("Cannot find the normalizer txt file")          
+
+
     return float(normalizer)
 
 def readNormalizerDictionary():
@@ -311,7 +320,7 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
         
         :return: returns the group fairness value for the unfair ranking generated at input setting
     """
-    print ("calculating normalizer with userN=", _user_N , ", proN", _pro_N , ", measure", _gf_measure )
+    #print ("calculating normalizer with userN=", _user_N , ", proN", _pro_N , ", measure", _gf_measure )
     from lenskit.metrics.dataGenerator import generateUnfairRanking
     #import lenskit.metrics.dataGenerator * as dataGenerator  
     # set the range of fairness probability based on input group fairness measure
@@ -332,7 +341,7 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
             
             iter_results.append(gf)
         avg_maximums.append(np.mean(iter_results))        
-    print ("normalizer value to return : ", max(avg_maximums))
+    #print ("normalizer value to return : ", max(avg_maximums))
     return max(avg_maximums)
 
 def calculateScoreDifference(_scores1,_scores2):

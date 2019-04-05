@@ -134,6 +134,8 @@ class BiasedMF(BiasMFPredictor):
 
         _logger.info('[%s] training biased MF model with ALS for %d features',
                      self.timer, self.features)
+        # current = de nuværende opdaterede vægte, uctx = det matrix vi forsøger at genskabe 
+        # ictx = det transpose uctx (bytte række/colloner)
         for epoch, model in enumerate(self._train_iters(current, uctx, ictx)):
             current = model
 
@@ -268,7 +270,7 @@ class ImplicitMF(MFPredictor):
         self.user_index_ = current.users
         self.item_features_ = current.item_matrix
         self.user_features_ = current.user_matrix
-
+        #print(self.)
         return self
 
     def _train_iters(self, current, uctx, ictx):
