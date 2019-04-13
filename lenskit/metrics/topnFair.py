@@ -28,7 +28,7 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 
 ##
-def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, items_N=None, proItems_N=None):
+def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, items_n=None, proItems_n=None):
     #print("calculateNDFairnes")
     #print(recs.head())
     #_ranking = []
@@ -50,11 +50,14 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, i
         return calculate_dem_Parity(recs, _protected_group)
     
     elif _gf_measure == "rND" or _gf_measure == "rKL" or _gf_measure == "rRD":
-        _normalizer = getNormalizer(items_N, proItems_N, _gf_measure)
-        return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer)
+        #print ("calculate normalizer : ", items_n, "+", proItems_n, "+", _gf_measure )
+        _normalizer = 1
+        #_normalizer = getNormalizer(items_n, proItems_n, _gf_measure)
+        #print (_normalizer)
+        return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, items_n, proItems_n)
      
     else:
-        print("no valid _gf_measure given")
+        print( _gf_measure, "is not a valid _gf_measure")
         return 0; 
     
 
@@ -83,7 +86,7 @@ def calculate_dem_Parity(recs, protected_group):
     
 
 
-def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer):
+def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, items_n, proItems_n ):
     """
         Calculate group fairness value of the whole ranking.
         Calls function 'calculateFairness' in the calculation.
@@ -96,11 +99,13 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
         :param _gf_measure:  Group fairness measure to be used in the calculation, 
                             one of 'rKL', 'rND', 'rRD'.
         :param _normalizer: The normalizer of the input _gf_measure that is computed externally for efficiency.
+        :param
+        :param 
         :return: returns  fairness value of _ranking, a float, normalized to [0, 1]
     """
     #print("calculateNDFairnessPara")
-    user_N=len(_ranking)
-    pro_N=len(_protected_group)
+    #user_N=len(_ranking)
+    #pro_N=len(_protected_group)
     
     """    if 0 not in _ranking:
         if 1 not in _ranking: 
@@ -129,13 +134,14 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
         raise TypeError("Input group fairness measure must be a string that choose from ['rKL', 'rND', 'rRD']")
 
     discounted_gf=0 #initialize the returned gf value
-    for countni in range(user_N):
+    for countni in range(len(_ranking)):
         countni=countni+1
         if(countni%_cut_point ==0):
             ranking_cutpoint=_ranking[0:countni]
+            print(ranking_cutpoint)
             pro_cutpoint=set(ranking_cutpoint).intersection(_protected_group)
 
-            gf=calculateFairness(ranking_cutpoint,pro_cutpoint,user_N,pro_N,_gf_measure)
+            gf=calculateFairness(ranking_cutpoint,pro_cutpoint,items_n, proItems_n,_gf_measure)
             discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
             
             # make a call to compute, or look up, the normalizer; make sure to check that it's not 0!
@@ -145,7 +151,7 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
     return discounted_gf/_normalizer
 
 
-def calculateFairness(_ranking,_protected_group,_user_N,_pro_N,_gf_measure):
+def calculateFairness(_ranking,_protected_group,items_n, proItems_n,_gf_measure):
     """
         Calculate the group fairness value of input ranking.
         Called by function 'calculateNDFairness'.
@@ -155,8 +161,8 @@ def calculateFairness(_ranking,_protected_group,_user_N,_pro_N,_gf_measure):
                                 Can be a total ranking of input data or a partial ranking of input data.
         :param _protected_group: A set of identifiers from _ranking that represent members of the protected group
                                 e.g., [0, 2, 3].  Stored as a python array for convenience, order does not matter.
-        :param _user_N: The size of input items 
-        :param _pro_N: The size of input protected group
+        :param items_n: The size of input items 
+        :param proItems_n: The size of input protected group
         :param _gf_measure: The group fairness measure to be used in calculation        
         :return: returns the value of selected group fairness measure of this input ranking
     """
@@ -164,17 +170,17 @@ def calculateFairness(_ranking,_protected_group,_user_N,_pro_N,_gf_measure):
     ranking_k=len(_ranking)
     pro_k=len(_protected_group)
     if _gf_measure==KL_DIVERGENCE: #for KL-divergence difference
-        gf=calculaterKL(ranking_k,pro_k,_user_N,_pro_N)        
+        gf=calculaterKL(ranking_k,pro_k,items_n, proItems_n)        
         
     elif _gf_measure==ND_DIFFERENCE:#for normalized difference
-        gf=calculaterND(ranking_k,pro_k,_user_N,_pro_N)
+        gf=calculaterND(ranking_k,pro_k,items_n, proItems_n)
 
     elif _gf_measure==RD_DIFFERENCE: #for ratio difference
-        gf=calculaterRD(ranking_k,pro_k,_user_N,_pro_N)     
+        gf=calculaterRD(ranking_k,pro_k,items_n, proItems_n)     
 
     return gf 
 
-def calculaterKL(_ranking_k,_pro_k,_user_N,_pro_N):
+def calculaterKL(_ranking_k,_pro_k,items_n, proItems_n):
     """
         Calculate the KL-divergence difference of input ranking        
         :param _ranking_k: A permutation of k numbers that represents a ranking of k individuals, 
@@ -183,19 +189,19 @@ def calculaterKL(_ranking_k,_pro_k,_user_N,_pro_N):
                                 Can be a total ranking of input data or a partial ranking of input data.
         :param _pro_k: A set of identifiers from _ranking_k that represent members of the protected group
                                 e.g., [0, 2, 3].  Stored as a python array for convenience, order does not matter.
-        :param _user_N: The size of input items 
-        :param _pro_N: The size of input protected group                
+        :param items_n: The size of input items 
+        :param proItems_n: The size of input protected group                
         :return: returns the value of KL-divergence difference of this input ranking
     """
     px=_pro_k/(_ranking_k)
-    qx=_pro_N/_user_N
+    qx=proItems_n/items_n
     if px==0 or px ==1: # manually set the value of extreme case to avoid error of math.log function 
         px=0.001
     if qx == 0 or qx ==1:
         qx=0.001
     return (px*math.log(px/qx,LOG_BASE)+(1-px)*math.log((1-px)/(1-qx),LOG_BASE))
 
-def calculaterND(_ranking_k,_pro_k,_user_N,_pro_N):
+def calculaterND(_ranking_k,_pro_k,items_n,proItems_n):
     """
         Calculate the normalized difference of input ranking        
         :param _ranking_k: A permutation of k numbers that represents a ranking of k individuals, 
@@ -204,13 +210,13 @@ def calculaterND(_ranking_k,_pro_k,_user_N,_pro_N):
                                 Can be a total ranking of input data or a partial ranking of input data.
         :param _pro_k: A set of identifiers from _ranking_k that represent members of the protected group
                                 e.g., [0, 2, 3].  Stored as a python array for convenience, order does not matter.
-        :param _user_N: The size of input items 
-        :param _pro_N: The size of input protected group                
+        :param items_n: The size of input items 
+        :param proItems_n: The size of input protected group                
         :return: returns the value of normalized difference of this input ranking
     """
-    return abs(_pro_k/_ranking_k-_pro_N/_user_N)
+    return abs(_pro_k/_ranking_k-proItems_n/items_n)
 
-def calculaterRD(_ranking_k,_pro_k,_user_N,_pro_N):
+def calculaterRD(_ranking_k,_pro_k,items_n,proItems_n):
     """
         Calculate the ratio difference of input ranking        
         :param _ranking_k: A permutation of k numbers that represents a ranking of k individuals, 
@@ -219,12 +225,12 @@ def calculaterRD(_ranking_k,_pro_k,_user_N,_pro_N):
                                 Can be a total ranking of input data or a partial ranking of input data.
         :param _pro_k: A set of identifiers from _ranking_k that represent members of the protected group
                                 e.g., [0, 2, 3].  Stored as a python array for convenience, order does not matter.
-        :param _user_N: The size of input items 
-        :param _pro_N: The size of input protected group                
+        :param items_n: The size of input items 
+        :param proItems_n: The size of input protected group                
         :return: returns the value of ratio difference of this input ranking
         # This version of rRD is consistent with poster of FATML instead of arXiv submission.
     """
-    input_ratio=_pro_N/(_user_N-_pro_N)
+    input_ratio=proItems_n/(items_n-proItems_n)
     unpro_k=_ranking_k-_pro_k
     
     if unpro_k==0: # manually set the case of denominator equals zero
@@ -236,45 +242,46 @@ def calculaterRD(_ranking_k,_pro_k,_user_N,_pro_N):
        
     return abs(min_ratio-input_ratio)
 
-def getNormalizer(_user_N,_pro_N,_gf_measure):
+def getNormalizer(items_n,proItems_n,_gf_measure):
     """
         Retrieve the normalizer of the current setting in external normalizer dictionary.
         If not founded, call function 'calculateNormalizer' to calculate the normalizer of input group fairness measure at current setting.
         Called separately from fairness computation for efficiency.
-        :param _user_N: The total user number of input ranking
-        :param _pro_N: The size of protected group in the input ranking        
+        :param items_n: The total user number of input ranking
+        :param proItems_n: The size of protected group in the input ranking        
         :param _gf_measure: The group fairness measure to be used in calculation
         
         :return: returns the maximum value of selected group fairness measure in _max_iter iterations
     """
-    #print("normalizer -pro-N: ", _pro_N)
+    #print("normalizer -pro-N: ", proItems_n)
     # read the normalizor dictionary that is computed externally for efficiency
     normalizer_dic=readNormalizerDictionary()
 
     # error handling for type  
-    if not isinstance( _user_N, ( int ) ):
+    if not isinstance( items_n, ( int ) ):
         raise TypeError("Input user number must be an integer")
-    if not isinstance( _pro_N, ( int ) ):
+    if not isinstance( proItems_n, ( int ) ):
         raise TypeError("Input size of protected group must be an integer")
     if not isinstance( _gf_measure, str ):
         raise TypeError("Input group fairness measure must be a string that choose from ['rKL', 'rND', 'rRD']")
     # error handling for value 
-    if _user_N <=0:
+    if items_n <=0:
         raise ValueError("Input a valud user number")
-    if _pro_N <=0:
+    if proItems_n <=0:
         raise ValueError("Input a valid protected group size")
-    if _pro_N >= _user_N:
+    if proItems_n >= items_n:
         raise ValueError("Input a valid protected group size")
 
 
-    current_normalizer_key=str(_user_N)+","+str(_pro_N)+","+_gf_measure
+    current_normalizer_key=str(items_n)+","+str(proItems_n)+","+_gf_measure
     if current_normalizer_key in normalizer_dic.keys():
         normalizer=normalizer_dic[current_normalizer_key]
     else:
-        normalizer=calculateNormalizer(_user_N,_pro_N,_gf_measure) 
+        normalizer=calculateNormalizer(items_n,proItems_n,_gf_measure) 
+        print("normalizer: " , normalizer)
         try:
             with open("normalizer.txt" , "a+") as f:                
-                towrite = current_normalizer_key + ":" + str(round(normalizer,2)) + "\n"
+                towrite = current_normalizer_key + ":" + str(normalizer)+"\n"
                 f.write(towrite)
         except EnvironmentError as e:
             print("Cannot find the normalizer txt file")          
@@ -305,7 +312,7 @@ def readNormalizerDictionary():
         normalizer_dic[normalizer[0]]=normalizer[1]
     return normalizer_dic
 
-def calculateNormalizer(_user_N,_pro_N,_gf_measure):
+def calculateNormalizer(items_n,proItems_n,_gf_measure):
     """
         Calculate the normalizer of input group fairness measure at input user and protected group setting.
         The function use two constant: NORM_ITERATION AND NORM_CUTPOINT to specify the max iteration and batch size used in the calculation.
@@ -314,13 +321,13 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
         Then compute the average value of above results as the maximum value of each fairness probability.
         Finally, choose the maximum of value as the normalizer of this group fairness measure.
         
-        :param _user_N: The total user number of input ranking
-        :param _pro_N: The size of protected group in the input ranking 
+        :param items_n: The total user number of input ranking
+        :param proItems_n: The size of protected group in the input ranking 
         :param _gf_measure: The group fairness measure to be used in calculation 
         
         :return: returns the group fairness value for the unfair ranking generated at input setting
     """
-    #print ("calculating normalizer with userN=", _user_N , ", proN", _pro_N , ", measure", _gf_measure )
+    #print ("calculating normalizer with userN=", items_n , ", proN", proItems_n , ", measure", _gf_measure )
     from lenskit.metrics.dataGenerator import generateUnfairRanking
     #import lenskit.metrics.dataGenerator * as dataGenerator  
     # set the range of fairness probability based on input group fairness measure
@@ -332,12 +339,12 @@ def calculateNormalizer(_user_N,_pro_N,_gf_measure):
     for fpi in f_probs:
         iter_results=[] #initialize the lists of results of all iteration
         for iteri in range(NORM_ITERATION):
-            input_ranking=[x for x in range(_user_N)]
-            protected_group=[x for x in range(_pro_N)]
+            input_ranking=[x for x in range(items_n)]
+            protected_group=[x for x in range(proItems_n)]
             # generate unfair ranking using algorithm
             unfair_ranking=generateUnfairRanking(input_ranking,protected_group,fpi)    
             # calculate the non-normalized group fairness value i.e. input normalized value as 1
-            gf=calculateNDFairnessPara(unfair_ranking,protected_group,NORM_CUTPOINT,_gf_measure,1)
+            gf=calculateNDFairnessPara(unfair_ranking,protected_group,NORM_CUTPOINT,_gf_measure,1, items_n, proItems_n)
             
             iter_results.append(gf)
         avg_maximums.append(np.mean(iter_results))        
