@@ -10,6 +10,7 @@ from __future__ import division
 import random 
 import numpy as np
 import math
+from .topn import *
 #import dataGenerator
 
 from scipy.stats import spearmanr
@@ -56,6 +57,9 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, i
         #print (_normalizer)
         return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, items_n, proItems_n)
      
+    elif _gf_measure == "ndcg":
+        return ndcg(recs, truth)
+
     else:
         print( _gf_measure, "is not a valid _gf_measure")
         return 0; 
@@ -138,7 +142,6 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
         countni=countni+1
         if(countni%_cut_point ==0):
             ranking_cutpoint=_ranking[0:countni]
-            print(ranking_cutpoint)
             pro_cutpoint=set(ranking_cutpoint).intersection(_protected_group)
 
             gf=calculateFairness(ranking_cutpoint,pro_cutpoint,items_n, proItems_n,_gf_measure)
@@ -193,13 +196,20 @@ def calculaterKL(_ranking_k,_pro_k,items_n, proItems_n):
         :param proItems_n: The size of input protected group                
         :return: returns the value of KL-divergence difference of this input ranking
     """
+    
     px=_pro_k/(_ranking_k)
     qx=proItems_n/items_n
-    if px==0 or px ==1: # manually set the value of extreme case to avoid error of math.log function 
+     # manually set the value of extreme case to avoid error of math.log function
+    if px == 0:
         px=0.001
-    if qx == 0 or qx ==1:
+    elif px == 1: 
+       px = 0.999
+    if qx == 0:
         qx=0.001
+    elif qx == 1: 
+        qx = 0.999
     return (px*math.log(px/qx,LOG_BASE)+(1-px)*math.log((1-px)/(1-qx),LOG_BASE))
+#    rkl2 =px*math.log((px/qx),2)+(1-px)*math.log(((1-px)/(1-qx)),2)
 
 def calculaterND(_ranking_k,_pro_k,items_n,proItems_n):
     """
@@ -230,7 +240,17 @@ def calculaterRD(_ranking_k,_pro_k,items_n,proItems_n):
         :return: returns the value of ratio difference of this input ranking
         # This version of rRD is consistent with poster of FATML instead of arXiv submission.
     """
-    input_ratio=proItems_n/(items_n-proItems_n)
+    # tjekker ikke om items_n-proItems_n er 0??? Det står i teksten 
+    ## vores ændrign af koden der tjekker for 0: 
+    unpro_n = items_n-proItems_n
+    if unpro_n==0: # manually set the case of denominator equals zero
+        input_ratio=0
+    else:
+        input_ratio=proItems_n/(unpro_n)
+    
+    ## den originale en linje kode erstattetet med ovenstående. 
+    #input_ratio=proItems_n/(items_n-proItems_n)
+    
     unpro_k=_ranking_k-_pro_k
     
     if unpro_k==0: # manually set the case of denominator equals zero
@@ -239,7 +259,7 @@ def calculaterRD(_ranking_k,_pro_k,items_n,proItems_n):
         current_ratio=_pro_k/unpro_k
 
     min_ratio=min(input_ratio,current_ratio)
-       
+ 
     return abs(min_ratio-input_ratio)
 
 def getNormalizer(items_n,proItems_n,_gf_measure):

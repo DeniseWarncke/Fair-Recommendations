@@ -59,7 +59,7 @@ class FairRecListAnalysis:
 
 
 
-    def compute(self, recs, truth, protected_varible, providers = None,items_N=None, proItems_N=None ):
+    def compute(self, recs, truth, protected_varible, providers = None, items_N=None, proItems_N=None ):
         """
         Run the analysis.  Neither data frame should be meaningfully indexed.
 
