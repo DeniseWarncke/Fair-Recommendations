@@ -11,7 +11,7 @@ import random
 import numpy as np
 import math
 from .topn import *
-#import dataGenerator
+#dataGenerator
 
 from scipy.stats import spearmanr
 from scipy.stats import pearsonr
@@ -43,17 +43,21 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, i
     _cut_point = 10 
     _gf_measure = metric
     
-    if _gf_measure == "div":
+    if _gf_measure == "APCR":
         #print ("measure = div")
-        return calculate_div(recs, providers)
+        return calculate_APCR(recs, providers)
+
+    elif _gf_measure == "ndcg_APCR":
+        #print ("measure = div")
+        return calculate_ndcg_APCR(recs, providers, _cut_point)
 
     elif _gf_measure == "dem_parity":
         return calculate_dem_Parity(recs, _protected_group)
     
     elif _gf_measure == "rND" or _gf_measure == "rKL" or _gf_measure == "rRD":
         #print ("calculate normalizer : ", items_n, "+", proItems_n, "+", _gf_measure )
-        _normalizer = 1
-        #_normalizer = getNormalizer(items_n, proItems_n, _gf_measure)
+        #_normalizer = 1
+        _normalizer = getNormalizer(items_n, proItems_n, _gf_measure)
         #print (_normalizer)
         return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, items_n, proItems_n)
      
@@ -64,13 +68,6 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, i
         print( _gf_measure, "is not a valid _gf_measure")
         return 0; 
     
-
-def calculate_div(recs, providers):
-    res1 = recs[providers]
-    res2 = res1.sum()
-    res3 = res2.loc[(res2>0)]
-    
-    return len(res3)/len(providers)
 
 def calculate_dem_Parity(recs, protected_group): 
     #beslut hvad der er nemmest. Skal denne tage "protected group". contains eller tage en protected variabel?
@@ -87,8 +84,37 @@ def calculate_dem_Parity(recs, protected_group):
     #return abs(exposure_pro-exposure_unpro)
     return exposure_pro/exposure_unpro
 
+def calculate_APCR(recs, providers):
+    res1 = recs[providers]
+    res2 = res1.sum()
+    res3 = res2.loc[(res2>0)]
     
+    return len(res3)/len(providers)
 
+def calculate_ndcg_APCR(recs, providers, _cut_point):
+    discounted_gf=0 #initialize the returned gf value
+    normalizer = 0
+    print (recs.index)
+    recs.reset_index()
+    for countni in range(recs.shape[0]):
+        countni=countni+1
+        if(countni%_cut_point ==0):
+            recs_cutpoint=recs.iloc[0:countni,:]
+            #recs_cutpoint=recs.iloc[1:10,:]
+            print ( recs_cutpoint)
+            #iteration_count +=1
+            gf=calculate_APCR(recs_cutpoint,providers)
+            print("apcr: ", gf)
+            discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
+            print ("disc apcr = " , discounted_gf)
+            normalizer += 1/math.log(countni+1,LOG_BASE) 
+            # iteration_count = normalizer 
+
+    print ("normalizer)", normalizer)
+    return discounted_gf/normalizer
+
+
+    
 
 def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, items_n, proItems_n ):
     """
@@ -110,18 +136,6 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
     #print("calculateNDFairnessPara")
     #user_N=len(_ranking)
     #pro_N=len(_protected_group)
-    
-    """    if 0 not in _ranking:
-        if 1 not in _ranking: 
-            print ("user_n = ",  user_N)
-            print ("pro_n = ",  pro_N)
-            print ("true")
-            print("ranking")
-            print (_ranking)
-            print ("protectedgroup")
-            print(_protected_group)
-     """
-
 
     if _normalizer==0:
         raise ValueError("Normalizer equals to zero")
