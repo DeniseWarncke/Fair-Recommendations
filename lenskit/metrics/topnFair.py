@@ -29,7 +29,7 @@ NORM_FILE="normalizer.txt" # externally text file for normalizers
 
 
 ##
-def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, items_n=None, proItems_n=None):
+def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None):
     #print("calculateNDFairnes")
     #print(recs.head())
     #_ranking = []
@@ -47,19 +47,19 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, i
         #print ("measure = div")
         return calculate_APCR(recs, providers)
 
-    elif _gf_measure == "ndcg_APCR":
+    elif _gf_measure == "nd_APCR":
         #print ("measure = div")
-        return calculate_ndcg_APCR(recs, providers, _cut_point)
+        return calculate_nd_APCR(recs, providers, _cut_point)
 
-    elif _gf_measure == "dem_parity":
-        return calculate_dem_Parity(recs, _protected_group)
+    elif _gf_measure == "equal_ex":
+        return calculate_equal_ex(recs, _protected_group)
     
     elif _gf_measure == "rND" or _gf_measure == "rKL" or _gf_measure == "rRD":
         #print ("calculate normalizer : ", items_n, "+", proItems_n, "+", _gf_measure )
         #_normalizer = 1
-        _normalizer = getNormalizer(items_n, proItems_n, _gf_measure)
+        _normalizer = getNormalizer(len(recs), len(protected_varible), _gf_measure)
         #print (_normalizer)
-        return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, items_n, proItems_n)
+        return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, len(recs), len(_protected_group))
      
     elif _gf_measure == "ndcg":
         return ndcg(recs, truth)
@@ -69,7 +69,7 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None, i
         return 0; 
     
 
-def calculate_dem_Parity(recs, protected_group): 
+def calculate_equal_ex(recs, protected_group): 
     #beslut hvad der er nemmest. Skal denne tage "protected group". contains eller tage en protected variabel?
     
     exposure_pro = 0 
@@ -91,26 +91,25 @@ def calculate_APCR(recs, providers):
     
     return len(res3)/len(providers)
 
-def calculate_ndcg_APCR(recs, providers, _cut_point):
+def calculate_nd_APCR(recs, providers, _cut_point):
     discounted_gf=0 #initialize the returned gf value
     normalizer = 0
-    print (recs.index)
+    #print (recs.index)
     recs.reset_index()
     for countni in range(recs.shape[0]):
         countni=countni+1
         if(countni%_cut_point ==0):
             recs_cutpoint=recs.iloc[0:countni,:]
             #recs_cutpoint=recs.iloc[1:10,:]
-            print ( recs_cutpoint)
+            #print ( recs_cutpoint)
             #iteration_count +=1
             gf=calculate_APCR(recs_cutpoint,providers)
-            print("apcr: ", gf)
+            #print("apcr: ", gf)
             discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
-            print ("disc apcr = " , discounted_gf)
+            #print ("disc apcr = " , discounted_gf)
             normalizer += 1/math.log(countni+1,LOG_BASE) 
             # iteration_count = normalizer 
 
-    print ("normalizer)", normalizer)
     return discounted_gf/normalizer
 
 
@@ -157,7 +156,6 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
         if(countni%_cut_point ==0):
             ranking_cutpoint=_ranking[0:countni]
             pro_cutpoint=set(ranking_cutpoint).intersection(_protected_group)
-
             gf=calculateFairness(ranking_cutpoint,pro_cutpoint,items_n, proItems_n,_gf_measure)
             discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
             
@@ -312,7 +310,7 @@ def getNormalizer(items_n,proItems_n,_gf_measure):
         normalizer=normalizer_dic[current_normalizer_key]
     else:
         normalizer=calculateNormalizer(items_n,proItems_n,_gf_measure) 
-        print("normalizer: " , normalizer)
+        #print("normalizer: " , normalizer)
         try:
             with open("normalizer.txt" , "a+") as f:                
                 towrite = current_normalizer_key + ":" + str(normalizer)+"\n"

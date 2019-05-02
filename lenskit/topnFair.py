@@ -59,7 +59,7 @@ class FairRecListAnalysis:
 
 
 
-    def compute(self, recs, truth, protected_varible, providers = None, items_N=None, proItems_N=None ):
+    def compute(self, recs, truth, protected_varible, providers = None):
         """
         Run the analysis.  Neither data frame should be meaningfully indexed.
 
@@ -71,11 +71,7 @@ class FairRecListAnalysis:
             protected_varible (string)
                 defining the name of the value of the protected variable - used rnd... and dem_parity
             providers(list)
-                list af dummy encoded variables/ columns. eg ["male","female","non"]   
-            items_N(int)
-                the total number of items in the candidate set. 
-            proItems_N (int)
-                the number of protected variables in the candidate set. 
+                list af dummy encoded variables/ columns. eg ["male","female","non"]    
              
         Returns:
             pandas.DataFrame: The results of the analysis.
@@ -122,7 +118,7 @@ class FairRecListAnalysis:
                 #print("grecs")
                 #g_recs.head
                 #print(len(g_recs))
-                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf, protected_varible, providers, items_N, proItems_N)
+                res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf, protected_varible, providers)
 
         return res
 
