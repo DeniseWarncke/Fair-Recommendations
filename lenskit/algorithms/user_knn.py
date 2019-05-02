@@ -21,7 +21,6 @@ class UserUser(Predictor):
     User-user nearest-neighbor collaborative filtering with ratings. This user-user implementation
     is not terribly configurable; it hard-codes design decisions found to work well in the previous
     Java-based LensKit code.
-
     Attributes:
         user_index_(pandas.Index): User index.
         item_index_(pandas.Index): Item index.
@@ -55,10 +54,8 @@ class UserUser(Predictor):
         """
         "Train" a user-user CF model.  This memorizes the rating data in a format that is usable
         for future computations.
-
         Args:
             ratings(pandas.DataFrame): (user, item, rating) data for collaborative filtering.
-
         Returns:
             UUModel: a memorized model for efficient user-based CF computation.
         """
@@ -103,14 +100,12 @@ class UserUser(Predictor):
     def predict_for_user(self, user, items, ratings=None):
         """
         Compute predictions for a user and items.
-
         Args:
             user: the user ID
             items (array-like): the items to predict
             ratings (pandas.Series):
                 the user's ratings (indexed by item id); if provided, will be used to
                 recompute the user's bias at prediction time.
-
         Returns:
             pandas.Series: scores for the items, indexed by item id.
         """
@@ -147,7 +142,6 @@ class UserUser(Predictor):
 
             # get the item's users & ratings
             i_users = self.transpose_matrix_.row_cs(ipos)
-            i_rates = self.transpose_matrix_.row_vs(ipos)
 
             # find and limit the neighbors
             i_sims = nsims[i_users]
@@ -164,8 +158,14 @@ class UserUser(Predictor):
 
             # now we have picked weights, take a dot product
             ism = i_sims[mask]
-            v = np.dot(i_rates[mask], ism)
-            v = v / np.sum(ism)
+            if self.aggregate == self.AGG_WA:
+                i_rates = self.transpose_matrix_.row_vs(ipos)
+                v = np.dot(i_rates[mask], ism)
+                v = v / np.sum(ism)
+            elif self.aggregate == self.AGG_SUM:
+                v = np.sum(ism)
+            else:
+                raise ValueError('invalid aggregate ' + self.aggregate)
             results[i] = v + umean
 
         results = pd.Series(results, index=items, name='prediction')
@@ -188,8 +188,11 @@ class UserUser(Predictor):
                 return None, 0
         else:
             _logger.debug('using provided ratings for user %d', user)
-            umean = ratings.mean()
-            ratings = ratings - umean
+            if self.center:
+                umean = ratings.mean()
+                ratings = ratings - umean
+            else:
+                umean = 0
             unorm = np.linalg.norm(ratings)
             ratings = ratings / unorm
             ratings = ratings.reindex(self.item_index_, fill_value=0).values
