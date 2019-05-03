@@ -57,7 +57,7 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None):
     elif _gf_measure == "rND" or _gf_measure == "rKL" or _gf_measure == "rRD":
         #print ("calculate normalizer : ", items_n, "+", proItems_n, "+", _gf_measure )
         #_normalizer = 1
-        _normalizer = getNormalizer(len(recs), len(protected_varible), _gf_measure)
+        _normalizer = getNormalizer(len(recs), len(_protected_group), _gf_measure)
         #print (_normalizer)
         return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, len(recs), len(_protected_group))
      
@@ -73,16 +73,18 @@ def calculate_equal_ex(recs, protected_group):
     #beslut hvad der er nemmest. Skal denne tage "protected group". contains eller tage en protected variabel?
     
     exposure_pro = 0 
+    count_pro = 0
     exposure_unpro = 0
-
+    count_unpro = 0
     for index, row in recs.iterrows():
         if row["item"] in protected_group:
            exposure_pro = exposure_pro + (1/math.log2(1+row["rank"])) 
+           count_pro += 1
         else:
            exposure_unpro = exposure_unpro + (1/math.log2(1+row["rank"]))  
-   
+           count_unpro += 1
     #return abs(exposure_pro-exposure_unpro)
-    return exposure_pro/exposure_unpro
+    return (exposure_pro/count_pro)/(exposure_unpro/count_unpro)
 
 def calculate_APCR(recs, providers):
     res1 = recs[providers]
@@ -163,7 +165,7 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
             # generally, think about error handling
 
     
-    return discounted_gf/_normalizer
+    return 1-(discounted_gf/_normalizer)
 
 
 def calculateFairness(_ranking,_protected_group,items_n, proItems_n,_gf_measure):
