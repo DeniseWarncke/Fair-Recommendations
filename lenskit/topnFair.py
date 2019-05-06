@@ -115,8 +115,8 @@ class FairRecListAnalysis:
             g_truth = truth.loc[tr_key, :]
             for j, (mf, mn, margs) in enumerate(self.metrics):
                 #print("tr_key: " , tr_key)
-                print(g_recs)
-                print(g_truth)
+                #print(g_recs)
+                #print(g_truth)
                 #g_recs.head
                 #print(len(g_recs))
                 res.iloc[i, j] = calculateNDFairnes(g_recs, g_truth, mf, protected_varible, providers)

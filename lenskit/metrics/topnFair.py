@@ -165,7 +165,7 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
             # generally, think about error handling
 
     
-    return 1-(discounted_gf/_normalizer)
+    return discounted_gf/_normalizer
 
 
 def calculateFairness(_ranking,_protected_group,items_n, proItems_n,_gf_measure):
