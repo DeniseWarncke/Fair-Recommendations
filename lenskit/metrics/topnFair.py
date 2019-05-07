@@ -238,8 +238,8 @@ def calculaterND(_ranking_k,_pro_k,items_n,proItems_n):
         :param proItems_n: The size of input protected group                
         :return: returns the value of normalized difference of this input ranking
     """
-    print("paramters : ", _ranking_k, _pro_k, items_n, proItems_n )
-    print("subresult : " , abs(_pro_k/_ranking_k-proItems_n/items_n))
+    #print("paramters : ", _ranking_k, _pro_k, items_n, proItems_n )
+    #print("subresult : " , abs(_pro_k/_ranking_k-proItems_n/items_n))
     return abs(_pro_k/_ranking_k-proItems_n/items_n)
 
 def calculaterRD(_ranking_k,_pro_k,items_n,proItems_n):
@@ -289,7 +289,7 @@ def getNormalizer(items_n,proItems_n,_gf_measure):
         
         :return: returns the maximum value of selected group fairness measure in _max_iter iterations
     """
-    print("normalizer:" , items_n, proItems_n) 
+    #print("normalizer:" , items_n, proItems_n) 
     # read the normalizor dictionary that is computed externally for efficiency
     normalizer_dic=readNormalizerDictionary()
 
