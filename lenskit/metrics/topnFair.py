@@ -55,10 +55,10 @@ def calculateNDFairnes(recs, truth, metric, protected_varible, providers=None):
         return calculate_equal_ex(recs, _protected_group)
     
     elif _gf_measure == "rND" or _gf_measure == "rKL" or _gf_measure == "rRD":
-        #print ("calculate normalizer : ", items_n, "+", proItems_n, "+", _gf_measure )
+        #print ("calculate normalizer : ", len(recs), "+", len(_protected_group), "+", _gf_measure )
         #_normalizer = 1
         _normalizer = getNormalizer(len(recs), len(_protected_group), _gf_measure)
-        #print (_normalizer)
+        print (_normalizer)
         return calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure, _normalizer, len(recs), len(_protected_group))
      
     elif _gf_measure == "ndcg":
@@ -107,10 +107,12 @@ def calculate_nd_APCR(recs, providers, _cut_point):
             #iteration_count +=1
             gf=calculate_APCR(recs_cutpoint,providers)
             #print("apcr: ", gf)
-            discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
+            #discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
+            discounted_gf+=gf/(1.1**(countni-10/100))
             #print ("disc apcr = " , discounted_gf)
-            normalizer += 1/math.log(countni+1,LOG_BASE) 
-            # iteration_count = normalizer 
+            #normalizer += 1/math.log(countni+1,LOG_BASE) 
+            normalizer += 1/(1.1**(countni-10/100))
+           
 
     return discounted_gf/normalizer
 
@@ -159,7 +161,9 @@ def calculateNDFairnessPara(_ranking, _protected_group, _cut_point, _gf_measure,
             ranking_cutpoint=_ranking[0:countni]
             pro_cutpoint=set(ranking_cutpoint).intersection(_protected_group)
             gf=calculateFairness(ranking_cutpoint,pro_cutpoint,items_n, proItems_n,_gf_measure)
-            discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
+            #discounted_gf+=gf/math.log(countni+1,LOG_BASE) # log base -> global variable
+            #print("counttni : ", countni)
+            discounted_gf+=gf/(1.1**(countni-10/1000)) # log base -> global variable
             
             # make a call to compute, or look up, the normalizer; make sure to check that it's not 0!
             # generally, think about error handling
@@ -315,14 +319,14 @@ def getNormalizer(items_n,proItems_n,_gf_measure):
     else:
         normalizer=calculateNormalizer(items_n,proItems_n,_gf_measure) 
         #print("normalizer: " , normalizer)
-        try:
-            with open("normalizer.txt" , "a+") as f:                
-                towrite = current_normalizer_key + ":" + str(normalizer)+"\n"
-                f.write(towrite)
-        except EnvironmentError as e:
-            print("Cannot find the normalizer txt file")          
+        #try:
+        #    with open("normalizer.txt" , "a+") as f:                
+        #        towrite = current_normalizer_key + ":" + str(normalizer)+"\n"
+        #        f.write(towrite)
+        #except EnvironmentError as e:
+        #    print("Cannot find the normalizer txt file")          
 
-
+   
     return float(normalizer)
 
 def readNormalizerDictionary():
